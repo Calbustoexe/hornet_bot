@@ -13,7 +13,7 @@ class Utilitaire(commands.Cog):
         description="Laisse-moi murmurer tes paroles aux Royaumes oubliés."
     )
     @discord.app_commands.describe(
-        salon="Le sanctuaire où les mots seront gravés (facultatif).",
+        salon="Le sanctuaire où les mots seront gravés.",
         message="Le message à transmettre aux âmes errantes."
     )
     @discord.app_commands.checks.has_permissions(manage_messages=True)
@@ -40,7 +40,7 @@ class Utilitaire(commands.Cog):
         description="Écoute les échos des pas laissés dans le Royaume."
     )
     @discord.app_commands.describe(
-        membre="L'âme dont tu veux sonder la trace (facultatif)."
+        membre="L'âme dont tu veux sonder la trace."
     )
     async def activite(self, interaction: discord.Interaction, membre: discord.Member = None):
         if membre is None:
