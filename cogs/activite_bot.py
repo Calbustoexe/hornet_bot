@@ -4,9 +4,11 @@ from discord.ext import commands
 class Activity(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        # Définir l'activité par défaut
-        default_activity = discord.Streaming(name="Cornifère", url="https://www.twitch.tv/hornet_hk")
-        self.bot.loop.create_task(self.bot.change_presence(activity=default_activity))
+        self.default_activity = discord.Streaming(name="Cornifère", url="https://www.twitch.tv/hornet_hk")
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.bot.change_presence(activity=self.default_activity)
 
     @commands.command(name="activité", help="Définir l'activité du bot Hornet.")
     async def activité(self, ctx, *, activité: str):
