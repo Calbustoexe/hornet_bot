@@ -78,7 +78,7 @@ class Utilitaire(commands.Cog):
         embed.add_field(name="🔊 Chuchotements des ombres", value=f"{total_vocal_time}", inline=False)
         embed.add_field(name="📜 Fréquence d'apparition", value=f"**{avg_messages_per_day:.2f}** messages par cycle lunaire.", inline=False)
         embed.set_footer(text="Les Royaumes se souviennent toujours de ceux qui osent y marcher...")
-        
+
         await interaction.response.send_message(embed=embed)
 
 async def setup(bot):

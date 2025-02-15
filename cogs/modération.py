@@ -44,8 +44,46 @@ class Moderation(commands.Cog):
         )
         await ctx.send(embed=embed_serveur)
 
-    @app_commands.command(name="warn", description="Infliger un rappel du Code de la Ruche à un voyageur égaré.")
-    async def warn(self, interaction: discord.Interaction, membre: discord.Member, message: str):
+    @commands.hybrid_command(name="unban", description="Libérer une âme du bannissement du royaume.")
+    @commands.has_permissions(ban_members=True)
+    async def unban(self, ctx, member: str):
+        """Dé-bannir un membre par son nom ou ID."""
+        banned_users = await ctx.guild.bans()
+        
+        # Vérifier si l'argument est un ID ou un nom
+        member_id = None
+        try:
+            member_id = int(member)  # Essayer de convertir en ID
+        except ValueError:
+            pass  # Si ce n'est pas un nombre, on le traite comme un nom
+
+        # Recherche du membre
+        member_to_unban = None
+        if member_id:
+            for ban_entry in banned_users:
+                if ban_entry.user.id == member_id:
+                    member_to_unban = ban_entry.user
+                    break
+        else:
+            for ban_entry in banned_users:
+                if ban_entry.user.name.lower() == member.lower() or ban_entry.user.display_name.lower() == member.lower():
+                    member_to_unban = ban_entry.user
+                    break
+
+        # Si on trouve le membre
+        if member_to_unban:
+            await ctx.guild.unban(member_to_unban)
+            embed = discord.Embed(
+                title="Libération du Bannissement",
+                description=f"**{member_to_unban.name}** a été libéré du bannissement.",
+                color=0x4b4f74
+            )
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"Impossible de trouver un membre avec le nom ou l'ID `{member}` dans la liste des bannis.", ephemeral=True)
+
+    @app_commands.command(name="avertir", description="Infliger un rappel du Code de la Ruche à un voyageur égaré.")
+    async def avertir(self, interaction: discord.Interaction, membre: discord.Member, message: str):
         """Ajoute un avertissement à un membre avec une ambiance Hollow Knight."""
         if membre.id not in self.db_warns:
             self.db_warns[membre.id] = []
@@ -67,8 +105,8 @@ class Moderation(commands.Cog):
         
         await interaction.response.send_message(f"{membre.mention} a été rappelé(e) à l'ordre par la Protectrice !", ephemeral=True)
 
-    @app_commands.command(name="warn_liste", description="Consulter les rappels faits à un voyageur.")
-    async def warn_liste(self, interaction: discord.Interaction, membre: discord.Member):
+    @app_commands.command(name="liste_avertissements", description="Consulter les rappels faits à un voyageur.")
+    async def liste_avertissements(self, interaction: discord.Interaction, membre: discord.Member):
         """Affiche la liste des avertissements d'un membre dans l'ambiance Hollow Knight."""
         warns = self.db_warns.get(membre.id, [])
         
@@ -154,8 +192,8 @@ class Moderation(commands.Cog):
         )
         await ctx.send(embed=embed_serveur)
 
-    # Commande slash /infos
-    @app_commands.command(name="infos_user", description="Obtiens des informations sur un membre du royaume.")
+    # Commande slash /infos_user
+    @app_commands.command(name="infos_utilisateur", description="Obtiens des informations sur un membre du royaume.")
     async def infos(self, interaction: discord.Interaction, member: discord.Member = None):
         if member is None:
             member = interaction.user  # Si aucun membre n'est spécifié, utilise l'auteur de la commande

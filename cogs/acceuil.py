@@ -16,7 +16,7 @@ class Accueil(commands.Cog):
             # Message d'accueil personnalisé
             embed = Embed(
                 title="Bienvenue à Hollownest...",
-                description=f"Bienvenue, {member.mention}. Votre voyage commence ici, dans l'ombre de la Caverne... Essayez de survivre, les ombres vous souhaient un bon moment dans notre demeur.",
+                description=f"Bienvenue, {member.mention}. Votre voyage commence ici, dans l'ombre de la Caverne... Essayez de survivre, les ombres vous souhaient un bon moment dans notre demeure.",
                 color=0x4b4f74  # Une couleur sombre pour le thème
             )
             embed.set_footer(text="L'écho des âmes perdues vous guidera.")
