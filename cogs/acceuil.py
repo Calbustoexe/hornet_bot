@@ -7,7 +7,7 @@ class Accueil(commands.Cog):
         self.bot = bot
         self.welcome_channel_id = None  # On garde l'ID du salon d'accueil
 
-    @commands.command(name="acceuil")
+    @commands.command(name="accueil")
     @commands.has_permissions(administrator=True)
     async def set_accueil(self, ctx, channel_id: int):
         """Permet à un administrateur de définir un salon d'accueil."""
@@ -25,16 +25,18 @@ class Accueil(commands.Cog):
         welcome_channel = member.guild.get_channel(self.welcome_channel_id)
         
         if welcome_channel:
-            # Message d'accueil personnalisé
+            # Création de l'embed
             embed = Embed(
                 title="Bienvenue à Hollownest...",
-                description=f"Bienvenue, {member.mention}. Votre voyage commence ici, dans l'ombre de la Caverne... Essayez de survivre, les ombres vous souhaitent un bon moment dans notre demeure.",
-                color=0x4b4f74  # Une couleur sombre pour le thème
+                description=f"Bienvenue, {member.mention}. Ton voyage commence ici, dans l'ombre de la Caverne... "
+                            "Survis, explore et découvre les secrets enfouis de ce royaume oublié.",
+                color=0x4b4f74  # Couleur sombre pour coller au thème
             )
-            embed.set_footer(text="L'écho des âmes perdues vous guidera.")
-            
-            # Envoi du message d'accueil
-            await welcome_channel.send(embed=embed)
+            embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
+            embed.set_footer(text="L'écho des âmes perdues te guidera...")
+
+            # Envoi du message avec mention détachée
+            await welcome_channel.send(content=member.mention, embed=embed)
         else:
             print("Le salon d'accueil n'est pas trouvé.")  # Si le salon n'existe pas
 
