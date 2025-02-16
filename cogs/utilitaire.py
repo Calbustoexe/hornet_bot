@@ -46,28 +46,37 @@ class Utilitaire(commands.Cog):
         if membre is None:
             membre = interaction.user
 
-        # Récupérer les messages envoyés (dépend des permissions du bot)
+        # Récupération sécurisée des messages envoyés
         messages_count = 0
         for channel in interaction.guild.text_channels:
             try:
                 async for message in channel.history(limit=None):
                     if message.author == membre:
                         messages_count += 1
-            except discord.Forbidden:
-                continue
+            except (discord.Forbidden, discord.HTTPException):
+                continue  # Ignore les salons inaccessibles
 
-        # Temps passé en vocal
-        total_vocal_time = 0
+        # Gestion du temps passé en vocal
         if membre.voice and membre.voice.channel:
-            total_vocal_time = "Actuellement dans le Royaume des murmures"
+            total_vocal_time = "Actuellement dans le Royaume des Murmures."
         else:
             total_vocal_time = "Les ténèbres sont silencieuses..."
 
-        # Fréquence d'activité
-        days_active = (datetime.datetime.now() - membre.joined_at).days or 1
-        avg_messages_per_day = messages_count / days_active
+        # Gestion du fuseau horaire pour éviter l'erreur d'offset-naive et offset-aware
+        joined_at = membre.joined_at
+        if joined_at is not None:
+            if joined_at.tzinfo is None:
+                joined_at = joined_at.replace(tzinfo=datetime.timezone.utc)
 
-        # Création de l'embed
+            now = datetime.datetime.now(datetime.timezone.utc)
+            days_active = (now - joined_at).days or 1
+        else:
+            days_active = 1  # Valeur par défaut si l'info est indisponible
+
+        # Fréquence d'activité (évite division par zéro)
+        avg_messages_per_day = messages_count / days_active if days_active > 0 else 0
+
+        # Création de l'embed avec un style Hollow Knight
         embed = discord.Embed(
             title=f"Vestiges d'Errance - {membre.display_name}",
             description="Les échos de ton périple résonnent dans l'obscurité...",
@@ -75,7 +84,7 @@ class Utilitaire(commands.Cog):
         )
         embed.set_thumbnail(url=membre.display_avatar.url)
         embed.add_field(name="🌀 Murmures gravés", value=f"**{messages_count}** messages envoyés dans le Néant.", inline=False)
-        embed.add_field(name="🔊 Chuchotements des ombres", value=f"{total_vocal_time}", inline=False)
+        embed.add_field(name="🔊 Chuchotements des ombres", value=total_vocal_time, inline=False)
         embed.add_field(name="📜 Fréquence d'apparition", value=f"**{avg_messages_per_day:.2f}** messages par cycle lunaire.", inline=False)
         embed.set_footer(text="Les Royaumes se souviennent toujours de ceux qui osent y marcher...")
 
