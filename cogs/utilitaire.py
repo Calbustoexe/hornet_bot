@@ -90,5 +90,101 @@ class Utilitaire(commands.Cog):
 
         await interaction.response.send_message(embed=embed)
 
+
+    @commands.hybrid_command(name="mp", with_app_command=True, description="Envoie un message privé à un utilisateur.")
+    async def mp(self, ctx: commands.Context, user: discord.User, *, message: str):
+        """Commande hybride pour envoyer un message privé."""
+        try:
+            await user.send(message)
+            
+            embed = discord.Embed(
+                title="📩 Message envoyé",
+                description=f"**'{message}'**\n\n a été envoyé à {user.mention} avec succès.",
+                color=discord.Color.green()
+            )
+            await ctx.send(embed=embed)
+        except discord.Forbidden:
+            embed = discord.Embed(
+                title="❌ Échec de l'envoi",
+                description=f"Impossible d'envoyer un MP à {user.mention}.",
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
+
+
+    @commands.hybrid_command(name="mp_embed", with_app_command=True, description="Envoie un message privé sous forme d'embed à un utilisateur avec confirmation.")
+    async def mp_embed(
+        self, ctx: commands.Context, user: discord.User,
+        titre: str, corps: str, 
+        contenu: str = None, footer: str = None, couleur: str = None
+    ):
+        """Commande hybride pour envoyer un MP sous forme d'embed avec confirmation."""
+
+        # Vérification des arguments obligatoires (pour le préfixe uniquement)
+        if not titre or not corps:
+            if isinstance(ctx, commands.Context):  # Si c'est une commande avec préfixe
+                await ctx.send("❌ **Titre et Corps sont obligatoires !**", delete_after=5)
+            return
+
+        # Définition de la couleur
+        try:
+            color = discord.Color(int(couleur, 16)) if couleur else discord.Color.dark_gray()
+        except ValueError:
+            color = discord.Color.dark_gray()
+
+        # Création de l'embed du message
+        embed_mp = discord.Embed(title=titre, description=contenu, color=color)
+        embed_mp.add_field(name="Message :", value=corps, inline=False)
+
+        if footer:
+            embed_mp.set_footer(text=footer)
+
+        embed_mp.set_author(name=f"Envoyé par {ctx.author}", icon_url=ctx.author.display_avatar.url)
+
+        # Embed de confirmation
+        embed_confirm = discord.Embed(
+            title="🔔 Confirmation requise",
+            description=f"Tu es sur le point d'envoyer cet embed à {user.mention}.\n\n✅ **Confirmer** ou ❌ **Annuler**.",
+            color=discord.Color.orange()
+        )
+        embed_confirm.add_field(name="Titre", value=titre, inline=False)
+        embed_confirm.add_field(name="Corps", value=corps, inline=False)
+        embed_confirm.set_footer(text="Clique sur un bouton ci-dessous.")
+
+        # Boutons de confirmation
+        class Confirm(discord.ui.View):
+            def __init__(self):
+                super().__init__(timeout=30)
+
+            @discord.ui.button(label="Confirmer", style=discord.ButtonStyle.success)
+            async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+                if interaction.user != ctx.author:
+                    return await interaction.response.send_message("❌ **Tu ne peux pas interagir avec ce message.**", ephemeral=True)
+
+                try:
+                    await user.send(embed=embed_mp)
+                    await interaction.response.edit_message(
+                        embed=discord.Embed(title="✅ Message envoyé", description=f"L'embed a bien été envoyé à {user.mention}.", color=discord.Color.green()),
+                        view=None
+                    )
+                except discord.Forbidden:
+                    await interaction.response.edit_message(
+                        embed=discord.Embed(title="❌ Échec de l'envoi", description=f"Impossible d'envoyer un MP à {user.mention}.", color=discord.Color.red()),
+                        view=None
+                    )
+
+            @discord.ui.button(label="Annuler", style=discord.ButtonStyle.danger)
+            async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+                if interaction.user != ctx.author:
+                    return await interaction.response.send_message("❌ **Tu ne peux pas interagir avec ce message.**", ephemeral=True)
+
+                await interaction.response.edit_message(
+                    embed=discord.Embed(title="❌ Annulé", description="L'envoi du message a été annulé.", color=discord.Color.red()),
+                    view=None
+                )
+
+        # Envoi du message de confirmation
+        await ctx.send(embed=embed_confirm, view=Confirm())
+
 async def setup(bot):
     await bot.add_cog(Utilitaire(bot))
