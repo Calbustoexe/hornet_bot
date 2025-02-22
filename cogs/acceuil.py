@@ -5,16 +5,25 @@ from discord import Embed
 class Accueil(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.welcome_channel_id = None  # On garde l'ID du salon d'accueil
+        self.welcome_channel_id = 1339663897967329362
 
-    
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.welcome_channel_id = load_channel_id()
+        
     @commands.command(name="accueil")
     @commands.has_permissions(administrator=True)
     async def set_accueil(self, ctx, channel_id: int):
         """Permet à un administrateur de définir un salon d'accueil."""
+        # Vérifie si le salon existe
+        channel = self.bot.get_channel(channel_id)
+        if channel is None:
+            await ctx.send("❌ Le salon spécifié n'existe pas.")
+            return
+
         self.welcome_channel_id = channel_id
-        await ctx.send(f"Salon d'accueil défini avec succès! ID: {channel_id}")
-        save_channel_id()
+        await ctx.send(f"✅ Salon d'accueil défini avec succès! ID: <#{channel_id}>")
+        save_channel_id(channel_id)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -42,16 +51,21 @@ class Accueil(commands.Cog):
         else:
             print("Le salon d'accueil n'est pas trouvé.")  # Si le salon n'existe pas
 
-
 def save_channel_id(channel_id):
-    with open("welcome_channel_id.txt", "w") as f:
-        f.write(str(channel_id))
-        
+    try:
+        with open("welcome_channel_id.txt", "w") as f:
+            f.write(str(channel_id))
+    except Exception as e:
+        print(f"❌ Erreur lors de la sauvegarde de l'ID du salon : {type(e).__name__} - {e}")
+
 def load_channel_id():
     try:
         with open("welcome_channel_id.txt", "r") as f:
             return int(f.read())
     except FileNotFoundError:
+        return None
+    except Exception as e:
+        print(f"❌ Erreur lors du chargement de l'ID du salon : {type(e).__name__} - {e}")
         return None
     
 async def setup(bot):
