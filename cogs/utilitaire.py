@@ -123,7 +123,7 @@ class Utilitaire(commands.Cog):
         # Vérification des arguments obligatoires (pour le préfixe uniquement)
         if not titre or not corps:
             if isinstance(ctx, commands.Context):  # Si c'est une commande avec préfixe
-                await ctx.send("❌ **Titre et Corps sont obligatoires !**", delete_after=5)
+                await ctx.send("❌ **Les champs titre et Corps sont obligatoires !**", delete_after=5)
             return
 
         # Définition de la couleur

@@ -30,7 +30,7 @@ class Accueil(commands.Cog):
         """Accueille le nouveau membre avec un message mystique."""
         # Vérifie si un salon d'accueil est défini
         if self.welcome_channel_id is None:
-            await member.guild.system_channel.send("Aucun salon d'accueil défini.")
+            await member.guild.system_channel.send("Aucun salon d'accueil défini")
             return
         
         welcome_channel = member.guild.get_channel(self.welcome_channel_id)
